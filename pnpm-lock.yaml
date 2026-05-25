@@ -29,6 +29,12 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@nais/agent-adapter':
+        specifier: workspace:*
+        version: link:../../packages/agent-adapter
+      '@nais/avatar-runtime':
+        specifier: workspace:*
+        version: link:../../packages/avatar-runtime
       '@tauri-apps/api':
         specifier: ^2.11.0
         version: 2.11.0
