@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Rust build artifacts
+apps/desktop/src-tauri/target/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Package lock (use npm)
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,15 @@
+{
+  "name": "nais",
+  "private": true,
+  "version": "0.1.0",
+  "description": "NAIS — Nano Assistant Intelligence System",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @nais/desktop run dev",
+    "build": "npm --workspace @nais/desktop run build",
+    "typecheck": "npm --workspace @nais/desktop run typecheck"
+  }
+}

@@ -1,0 +1,6 @@
+enabled: false
+provider: null
+voice_id: null
+speed: 1.0
+pitch: 0
+style: "calm"
