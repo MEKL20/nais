@@ -44,6 +44,7 @@ export function App() {
   // Characters
   const [packs, setPacks]           = useState<CharacterPackSummary[]>([]);
   const [selectedPack, setSelectedPack] = useState<CharacterPackDetail | null>(null);
+  const [currentExpression, setCurrentExpression] = useState<string>("neutral");
   const [packLoadError, setPackLoadError] = useState<string>("");
   const [loadingPacks, setLoadingPacks] = useState(false);
   const [loadingPack, setLoadingPack]   = useState(false);
@@ -76,6 +77,14 @@ export function App() {
 
       const next: AvatarState = AGENT_TO_AVATAR[kind] ?? "idle";
       setAvatarState(next);
+
+      // Derive expression from character pack state mapping when pack is loaded.
+      if (selectedPack?.states) {
+        const mapping = selectedPack.states[next];
+        setCurrentExpression(mapping?.expression ?? "neutral");
+      } else {
+        setCurrentExpression("neutral");
+      }
 
       if (kind === "session.message") {
         const data = ev.data as AgentEventData;
@@ -271,7 +280,7 @@ export function App() {
             <span className="character-name">{selectedPack.name}</span>
           </div>
         )}
-        <AvatarCanvas state={avatarState} mouthOpen={mouthOpen} />
+        <AvatarCanvas state={avatarState} expression={currentExpression} mouthOpen={mouthOpen} />
         <div className="avatar-state-badge">
           <span className={`agent-dot ${agentState}`} />
           <span>{agentState}</span>
