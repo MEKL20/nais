@@ -1,21 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './styles.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./styles.css";
 
-type NaisState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'success' | 'warning' | 'error';
+type NaisState = "idle" | "listening" | "thinking" | "speaking" | "success" | "warning" | "error";
 
 const stateLabels: Record<NaisState, string> = {
-  idle: 'Idle',
-  listening: 'Listening',
-  thinking: 'Thinking',
-  speaking: 'Speaking',
-  success: 'Success',
-  warning: 'Warning',
-  error: 'Error',
+  idle: "Idle",
+  listening: "Listening",
+  thinking: "Thinking",
+  speaking: "Speaking",
+  success: "Success",
+  warning: "Warning",
+  error: "Error",
 };
 
 function App() {
-  const [state, setState] = React.useState<NaisState>('idle');
+  const [state, setState] = React.useState<NaisState>("idle");
 
   return (
     <main className="shell">
@@ -28,7 +28,8 @@ function App() {
           <p className="eyebrow">NAIS Desktop</p>
           <h1>Nano Assistant Intelligence System</h1>
           <p className="summary">
-            Tauri + React shell ready for Live2D, VRM, character packs, and an OpenClaw-compatible gateway adapter.
+            Tauri + React shell ready for Live2D, VRM, character packs, and an OpenClaw-compatible
+            gateway adapter.
           </p>
 
           <div className="status-row">
@@ -38,7 +39,12 @@ function App() {
 
           <div className="state-grid" aria-label="Character state controls">
             {(Object.keys(stateLabels) as NaisState[]).map((key) => (
-              <button key={key} type="button" onClick={() => setState(key)} aria-pressed={state === key}>
+              <button
+                key={key}
+                type="button"
+                onClick={() => setState(key)}
+                aria-pressed={state === key}
+              >
                 {stateLabels[key]}
               </button>
             ))}
@@ -49,7 +55,7 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,

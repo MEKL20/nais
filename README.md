@@ -29,6 +29,7 @@
 NAIS is a personal AI desktop assistant that lives on your desktop screen. Unlike typical virtual assistants, NAIS has a visual character — an animated 2D/3D avatar that reacts to conversation, displays emotion, and expresses personality through motion and voice.
 
 NAIS is designed to be:
+
 - **Easily customizable** — swap the character's look, voice, and personality in seconds via character packs
 - **OpenClaw-powered** — uses OpenClaw as its agent brain, connecting to your own AI gateway
 - **Desktop-native** — runs as a lightweight Windows app powered by Tauri + WebView2
@@ -63,15 +64,15 @@ NAIS
 
 **Tech Stack:**
 
-| Layer | Technology |
-|-------|------------|
-| Desktop framework | Tauri 2.x |
-| Frontend UI | React 19 + TypeScript |
-| Build tool | Vite 8 |
-| Package manager | pnpm |
-| Avatar rendering | Live2D Cubism 4 (via `@cubism/live2d` in future) +VRM 1.x (via `@pixiv/three-vrm` in future) |
-| Agent brain | OpenClaw gateway adapter |
-| Character config | YAML (`character.yaml`) |
+| Layer             | Technology                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| Desktop framework | Tauri 2.x                                                                                    |
+| Frontend UI       | React 19 + TypeScript                                                                        |
+| Build tool        | Vite 8                                                                                       |
+| Package manager   | pnpm                                                                                         |
+| Avatar rendering  | Live2D Cubism 4 (via `@cubism/live2d` in future) +VRM 1.x (via `@pixiv/three-vrm` in future) |
+| Agent brain       | OpenClaw gateway adapter                                                                     |
+| Character config  | YAML (`character.yaml`)                                                                      |
 
 ---
 
@@ -116,12 +117,12 @@ nais/
 
 ### Prerequisites
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| Node.js | ≥ 20 | LTS recommended |
-| pnpm | ≥ 9 | Install via `corepack enable` |
-| Rust | ≥ 1.75 | `rustup install stable` |
-| Visual Studio Build Tools | Latest | For Windows WebView2 SDK |
+| Tool                      | Version | Notes                         |
+| ------------------------- | ------- | ----------------------------- |
+| Node.js                   | ≥ 20    | LTS recommended               |
+| pnpm                      | ≥ 9     | Install via `corepack enable` |
+| Rust                      | ≥ 1.75  | `rustup install stable`       |
+| Visual Studio Build Tools | Latest  | For Windows WebView2 SDK      |
 
 ### Local Development
 
@@ -163,6 +164,7 @@ pnpm --filter @nais/desktop run tauri:build
 #### Pre-built Windows Installers
 
 Download the latest artifacts from the **Actions** tab:
+
 - **nais-windows-msi** — MSI installer
 - **nais-windows-exe** — NSIS (`.exe`) installer
 
@@ -219,6 +221,7 @@ The avatar runtime contract is defined in `packages/avatar-runtime/`. Implementa
 ### Agent Adapter
 
 The OpenClaw adapter in `packages/agent-adapter/` handles:
+
 - Session management
 - Message routing to OpenClaw gateway
 - Event/state mapping between NAIS and the agent brain

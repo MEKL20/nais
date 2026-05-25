@@ -23,6 +23,11 @@
     "vite": "latest"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.11.2"
+    "@tauri-apps/cli": "^2.11.2",
+    "@typescript-eslint/eslint-plugin": "8",
+    "@typescript-eslint/parser": "8",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.32.0",
+    "prettier": "3"
   }
 }

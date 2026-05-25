@@ -10,7 +10,19 @@
   "scripts": {
     "dev": "pnpm --filter @nais/desktop run dev",
     "build": "pnpm --filter @nais/desktop run build",
-    "typecheck": "pnpm --filter @nais/desktop run typecheck"
+    "typecheck": "pnpm --filter @nais/desktop run typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
-  "packageManager": "pnpm@10.24.0"
+  "packageManager": "pnpm@10.24.0",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.32.0",
+    "prettier": "^3.8.3"
+  }
 }

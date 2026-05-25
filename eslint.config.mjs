@@ -1,0 +1,53 @@
+import eslint from "@eslint/js";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsparser from "@typescript-eslint/parser";
+import importPlugin from "eslint-plugin-import";
+
+const IGNORES = [
+  "node_modules/",
+  "dist/",
+  "target/",
+  "apps/desktop/src-tauri/target/",
+  "apps/desktop/dist/",
+  "*.min.js",
+  ".git/",
+];
+
+export default [
+  { ignores: IGNORES },
+  eslint.configs.recommended,
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: "module",
+      },
+      globals: {
+        process: "readonly",
+        console: "readonly",
+      },
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      "import": importPlugin,
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "no-console": ["error", { allow: ["warn", "error", "log"] }],
+      "no-debugger": "error",
+      "import/order": "error",
+      "import/no-cycle": "error",
+      "import/first": "error",
+      "import/newline-after-import": "error",
+      "import/no-useless-path-segments": "error",
+      "prefer-const": "error",
+      "no-var": "error",
+      "object-shorthand": "error",
+      "prefer-template": "error",
+    },
+  },
+];

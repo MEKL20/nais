@@ -57,10 +57,7 @@ export const CharacterYamlSchema = z.object({
   id: z
     .string()
     .min(1)
-    .regex(
-      /^[a-z0-9-_]+$/,
-      "id must be lowercase alphanumeric with dashes/underscores"
-    ),
+    .regex(/^[a-z0-9-_]+$/, "id must be lowercase alphanumeric with dashes/underscores"),
   name: z.string().min(1),
   type: z.enum(["manual", "generated", "ai"]),
   version: z.string().optional(),

@@ -84,9 +84,7 @@ export class CharacterPackLoader {
       const issues = result.error.issues
         .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
         .join("\n");
-      throw new LoaderError(
-        `Character pack validation failed for "${this.baseDir}":\n${issues}`
-      );
+      throw new LoaderError(`Character pack validation failed for "${this.baseDir}":\n${issues}`);
     }
 
     return result.data;
@@ -117,9 +115,7 @@ export class CharacterPackLoader {
       const issues = result.error.issues
         .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
         .join("\n");
-      throw new LoaderError(
-        `character.yaml validation failed:\n${issues}`
-      );
+      throw new LoaderError(`character.yaml validation failed:\n${issues}`);
     }
 
     return result.data;
@@ -158,6 +154,7 @@ export class CharacterPackLoader {
   private resolvePath(relativePath: string, _label: string): string {
     if (!this.resolvePaths) return relativePath;
     if (isAbsolute(relativePath)) return relativePath;
+    void _label; // reserved for future error messages
     return resolve(this.baseDir, relativePath);
   }
 }
@@ -186,7 +183,7 @@ export function tryLoadCharacterPack(dir: string): CharacterPack | null {
  * Returns paths that contain a valid character.yaml.
  */
 export function listCharacterPacks(rootDir: string): string[] {
-  let entries: string[] = [];
+  let entries: string[];
   try {
     entries = readdirSync(rootDir);
   } catch {

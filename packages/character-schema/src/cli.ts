@@ -23,15 +23,14 @@ for (const packPath of packs) {
     if (!validation.success) {
       console.error(`❌ ${packPath}`);
       validation.error.issues.forEach((i) =>
-        console.error(`   - ${i.path.join(".")}: ${i.message}`)
+        console.error(`   - ${i.path.join(".")}: ${i.message}`),
       );
       allOk = false;
     } else {
       const enabled =
-        pack.character.avatar.modes.live2d.enabled ||
-        pack.character.avatar.modes.vrm.enabled;
+        pack.character.avatar.modes.live2d.enabled || pack.character.avatar.modes.vrm.enabled;
       console.log(
-        `✅ ${pack.character.name} (${packPath}) — ${enabled ? "avatar enabled" : "no avatar enabled"}`
+        `✅ ${pack.character.name} (${packPath}) — ${enabled ? "avatar enabled" : "no avatar enabled"}`,
       );
     }
   } catch (err) {

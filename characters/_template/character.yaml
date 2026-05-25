@@ -1,27 +1,27 @@
-id: "template"
-name: "Template Character"
-type: "manual"
+id: 'template'
+name: 'Template Character'
+type: 'manual'
 source:
-  kind: "template"
+  kind: 'template'
   consent: true
 avatar:
-  default_mode: "live2d"
+  default_mode: 'live2d'
   modes:
     live2d:
       enabled: false
-      model: "./live2d/model.model3.json"
+      model: './live2d/model.model3.json'
     vrm:
       enabled: false
-      model: "./avatar3d/model.vrm"
+      model: './avatar3d/model.vrm'
 persona:
-  file: "./persona.md"
+  file: './persona.md'
 voice:
-  file: "./voice.yaml"
+  file: './voice.yaml'
 states:
-  idle: { expression: "neutral", motion: "idle" }
-  listening: { expression: "focused", motion: "listen" }
-  thinking: { expression: "thinking", motion: "think" }
-  speaking: { expression: "neutral", motion: "speak" }
-  success: { expression: "happy", motion: "nod" }
-  warning: { expression: "alert", motion: "alert" }
-  error: { expression: "confused", motion: "confused" }
+  idle: { expression: 'neutral', motion: 'idle' }
+  listening: { expression: 'focused', motion: 'listen' }
+  thinking: { expression: 'thinking', motion: 'think' }
+  speaking: { expression: 'neutral', motion: 'speak' }
+  success: { expression: 'happy', motion: 'nod' }
+  warning: { expression: 'alert', motion: 'alert' }
+  error: { expression: 'confused', motion: 'confused' }
