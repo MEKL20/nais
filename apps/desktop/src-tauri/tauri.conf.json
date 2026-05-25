@@ -30,14 +30,8 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "msi",
-      "nsis"
-    ],
-    "icon": [
-      "icons/icon.png",
-      "icons/icon.ico"
-    ],
+    "targets": ["msi", "nsis"],
+    "icon": ["icons/icon.png", "icons/icon.ico"],
     "publisher": "MEKL",
     "category": "Productivity",
     "shortDescription": "NAIS desktop assistant",

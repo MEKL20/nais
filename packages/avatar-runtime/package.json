@@ -1,0 +1,23 @@
+{
+  "name": "@nais/avatar-runtime",
+  "version": "0.1.0",
+  "description": "Avatar runtime contracts and placeholder adapters for NAIS Live2D and VRM renderers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ --max-warnings 0",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.0"
+  }
+}

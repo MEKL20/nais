@@ -15,6 +15,8 @@
 - [x] Verify `tauri build --no-bundle` completes and produces Linux binary.
 - [x] Set Tauri bundle config Windows-first (`msi`, `nsis`).
 - [x] Add GitHub Actions workflow for `windows-latest` that uploads `.msi` and `.exe` artifacts.
-- [ ] Next: implement character schema package (`packages/character-schema`).
+- [x] Add CONTRIBUTING.md, docs/STANDARDS.md, ESLint (flat config), Prettier, EditorConfig.
+- [x] Implement character schema package (`packages/character-schema`).
+- [ ] Next: implement `packages/avatar-runtime` contracts.
 - [ ] Next: implement initial avatar runtime contracts (`packages/avatar-runtime`).
 - [ ] Next: OpenClaw gateway adapter (`packages/agent-adapter`).

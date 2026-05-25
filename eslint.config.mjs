@@ -27,6 +27,7 @@ export default [
       globals: {
         process: "readonly",
         console: "readonly",
+        HTMLElement: "readonly",
       },
     },
     plugins: {
@@ -36,7 +37,14 @@ export default [
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-non-null-assertion": "error",
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
+      "no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "no-console": ["error", { allow: ["warn", "error", "log"] }],
       "no-debugger": "error",
       "import/order": "error",

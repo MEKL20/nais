@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "pnpm --filter @nais/desktop run dev",
     "build": "pnpm --filter @nais/desktop run build",
-    "typecheck": "pnpm --filter @nais/desktop run typecheck",
+    "typecheck": "pnpm --filter @nais/desktop run typecheck && pnpm --filter @nais/character-schema run typecheck && pnpm --filter @nais/avatar-runtime run typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -18,7 +18,7 @@
   },
   "packageManager": "pnpm@10.24.0",
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.4",
     "@typescript-eslint/eslint-plugin": "^8.59.4",
     "@typescript-eslint/parser": "^8.59.4",
     "eslint": "^9.39.4",

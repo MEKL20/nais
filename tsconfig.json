@@ -1,7 +1,14 @@
 {
   "files": [],
   "references": [
-    { "path": "./apps/desktop/tsconfig.json" },
-    { "path": "./packages/character-schema/tsconfig.json" }
+    {
+      "path": "./apps/desktop/tsconfig.json"
+    },
+    {
+      "path": "./packages/character-schema/tsconfig.json"
+    },
+    {
+      "path": "./packages/avatar-runtime/tsconfig.json"
+    }
   ]
 }
