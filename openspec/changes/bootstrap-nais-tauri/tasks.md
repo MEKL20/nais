@@ -18,4 +18,5 @@
 - [x] Add CONTRIBUTING.md, docs/STANDARDS.md, ESLint (flat config), Prettier, EditorConfig.
 - [x] Implement character schema package (`packages/character-schema`).
 - [x] Implement `packages/avatar-runtime` contracts (avatar-runtime adapter contract, base adapter, Live2D + VRM placeholders, factory).
-- [ ] Next: OpenClaw gateway adapter (`packages/agent-adapter`).
+- [x] Implement `packages/agent-adapter` (OpenClaw gateway adapter: HTTP /tools/invoke + WebSocket event subscription).
+- [ ] Next: integrate avatar runtime + agent adapter into Tauri desktop frontend.
