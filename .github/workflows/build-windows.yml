@@ -41,8 +41,14 @@ jobs:
       - name: Install JavaScript dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages
+        run: |
+          pnpm --filter @nais/character-schema run build
+          pnpm --filter @nais/avatar-runtime run build
+          pnpm --filter @nais/agent-adapter run build
+
       - name: Build frontend
-        run: npm run build
+        run: pnpm --filter @nais/desktop run build
 
       - name: Build Tauri Windows installers
         run: pnpm --filter @nais/desktop run tauri:build
