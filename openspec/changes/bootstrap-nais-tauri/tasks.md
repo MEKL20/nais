@@ -19,4 +19,4 @@
 - [x] Implement character schema package (`packages/character-schema`).
 - [x] Implement `packages/avatar-runtime` contracts (avatar-runtime adapter contract, base adapter, Live2D + VRM placeholders, factory).
 - [x] Implement `packages/agent-adapter` (OpenClaw gateway adapter: HTTP /tools/invoke + WebSocket event subscription).
-- [ ] Next: integrate avatar runtime + agent adapter into Tauri desktop frontend.
+- [x] Integrate avatar runtime + agent adapter into Tauri desktop frontend.
