@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 // ---------------------------------------------------------------------------
 // Types
@@ -50,13 +50,17 @@ fn is_valid_pack_dir(path: &PathBuf) -> bool {
 
 fn read_yaml_file(path: &PathBuf) -> Result<serde_json::Value, String> {
     let raw = fs::read_to_string(path).map_err(|e| e.to_string())?;
-    serde_json::from_str::<serde_json::Value>(&raw)
-        .map_err(|e| format!("invalid yaml/json: {e}"))
+    serde_yaml::from_str::<serde_json::Value>(&raw).map_err(|e| format!("invalid yaml: {e}"))
 }
 
 // ---------------------------------------------------------------------------
 // Tauri Commands
 // ---------------------------------------------------------------------------
+
+#[tauri::command]
+fn nais_ping() -> &'static str {
+    "nais-tauri-ok"
+}
 
 /// Return the default character packs root directory.
 #[tauri::command]
@@ -105,10 +109,17 @@ fn list_character_packs(root_dir: Option<String>) -> Result<CharacterPackListRes
             let yaml = read_yaml_file(&yaml_path).ok()?;
             let id = yaml.get("id")?.as_str()?.to_string();
             let name = yaml.get("name")?.as_str()?.to_string();
-            let avatar = yaml.get("avatar")?;
-            let modes = avatar?.get("modes")?;
-            let live2d_enabled = modes?.get("live2d")?.get("enabled")?.as_bool().unwrap_or(false);
-            let vrm_enabled = modes?.get("vrm")?.get("enabled")?.as_bool().unwrap_or(false);
+            let modes = yaml.get("avatar")?.get("modes")?;
+            let live2d_enabled = modes
+                .get("live2d")
+                .and_then(|v| v.get("enabled"))
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            let vrm_enabled = modes
+                .get("vrm")
+                .and_then(|v| v.get("enabled"))
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
 
             Some(CharacterPackSummary {
                 id,
@@ -138,17 +149,31 @@ fn load_character_pack(pack_dir: String) -> Result<CharacterPackDetail, String> 
     let name = yaml.get("name").and_then(|v| v.as_str()).unwrap_or_default().to_string();
 
     let avatar = yaml.get("avatar");
-    let default_mode = avatar?
-        .get("default_mode")
+    let default_mode = avatar
+        .and_then(|v| v.get("default_mode"))
         .and_then(|v| v.as_str())
         .unwrap_or("live2d")
         .to_string();
 
-    let modes = avatar?.get("modes");
-    let live2d_enabled = modes?.get("live2d")?.get("enabled")?.as_bool().unwrap_or(false);
-    let live2d_model = modes?.get("live2d")?.get("model")?.as_str().map(String::from);
-    let vrm_enabled = modes?.get("vrm")?.get("enabled")?.as_bool().unwrap_or(false);
-    let vrm_model = modes?.get("vrm")?.get("model")?.as_str().map(String::from);
+    let modes = avatar.and_then(|v| v.get("modes"));
+    let live2d = modes.and_then(|v| v.get("live2d"));
+    let vrm = modes.and_then(|v| v.get("vrm"));
+    let live2d_enabled = live2d
+        .and_then(|v| v.get("enabled"))
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let live2d_model = live2d
+        .and_then(|v| v.get("model"))
+        .and_then(|v| v.as_str())
+        .map(String::from);
+    let vrm_enabled = vrm
+        .and_then(|v| v.get("enabled"))
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let vrm_model = vrm
+        .and_then(|v| v.get("model"))
+        .and_then(|v| v.as_str())
+        .map(String::from);
 
     let states = yaml.get("states").cloned().unwrap_or(serde_json::Value::Null);
 
@@ -162,8 +187,11 @@ fn load_character_pack(pack_dir: String) -> Result<CharacterPackDetail, String> 
         .map(|c| c.chars().take(200).collect::<String>())
         .unwrap_or_default();
 
-    let voice = yaml.get("voice");
-    let voice_enabled = voice?.get("enabled")?.as_bool().unwrap_or(false);
+    let voice_enabled = yaml
+        .get("voice")
+        .and_then(|v| v.get("enabled"))
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
 
     Ok(CharacterPackDetail {
         id,
