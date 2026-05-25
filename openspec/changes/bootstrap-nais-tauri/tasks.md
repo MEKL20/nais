@@ -12,7 +12,9 @@
 - [x] Install Rust/Cargo and Tauri system dependencies (Ubuntu 24.04 packages + rustup stable).
 - [x] Convert Vite shell into full Tauri app with `src-tauri/` (Cargo.toml, tauri.conf.json, lib.rs, main.rs).
 - [x] Install Tauri CLI + API npm packages (`@tauri-apps/cli`, `@tauri-apps/api`).
-- [x] Verify `tauri build` completes and produces Linux binary + `.deb` bundle.
+- [x] Verify `tauri build --no-bundle` completes and produces Linux binary.
+- [x] Set Tauri bundle config Windows-first (`msi`, `nsis`).
+- [x] Add GitHub Actions workflow for `windows-latest` that uploads `.msi` and `.exe` artifacts.
 - [ ] Next: implement character schema package (`packages/character-schema`).
 - [ ] Next: implement initial avatar runtime contracts (`packages/avatar-runtime`).
 - [ ] Next: OpenClaw gateway adapter (`packages/agent-adapter`).
