@@ -8,8 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm --workspace @nais/desktop run dev",
-    "build": "npm --workspace @nais/desktop run build",
-    "typecheck": "npm --workspace @nais/desktop run typecheck"
-  }
+    "dev": "pnpm --filter @nais/desktop run dev",
+    "build": "pnpm --filter @nais/desktop run build",
+    "typecheck": "pnpm --filter @nais/desktop run typecheck"
+  },
+  "packageManager": "pnpm@10.24.0"
 }

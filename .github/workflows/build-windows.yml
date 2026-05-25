@@ -25,6 +25,11 @@ jobs:
         with:
           node-version: 22
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
+
       - name: Setup Rust stable
         uses: dtolnay/rust-toolchain@stable
 
@@ -34,15 +39,13 @@ jobs:
           workspaces: apps/desktop/src-tauri -> target
 
       - name: Install JavaScript dependencies
-        run: |
-          npm cache clean --force
-          npm ci --no-audit --no-fund --prefer-online --foreground-scripts
+        run: pnpm install --frozen-lockfile
 
       - name: Build frontend
         run: npm run build
 
       - name: Build Tauri Windows installers
-        run: npm --workspace @nais/desktop run tauri:build -- --bundles msi,nsis
+        run: pnpm --filter @nais/desktop run tauri:build -- --bundles msi,nsis
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
