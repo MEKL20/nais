@@ -1,44 +1,67 @@
-// NAIS Desktop App — integrates avatar canvas, agent service, and chat UI.
+// NAIS Desktop App — integrates avatar canvas, agent service, character packs, and chat UI.
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AvatarCanvas } from "./components/AvatarCanvas";
-
 import { createAgentService, type AgentState } from "./services/agent";
 import { createAvatarService } from "./services/avatar";
+import {
+  listCharacterPacks,
+  loadCharacterPack,
+  type CharacterPackDetail,
+  type CharacterPackSummary,
+} from "./services/characters";
 import type { AgentEvent, AgentEventData } from "@nais/agent-adapter";
 import type { AvatarState } from "@nais/avatar-runtime";
 
-type AppState = AvatarState | "setup";
+type AppScreen = "setup" | "main";
 
 const AGENT_TO_AVATAR: Partial<Record<string, AvatarState>> = {
-  "session.message":  "idle",
-  "agent.thinking":  "thinking",
-  "agent.speaking":  "speaking",
-  "agent.idle":      "idle",
-  "agent.error":     "error",
-  "session.ended":   "idle",
+  "session.message": "idle",
+  "agent.thinking": "thinking",
+  "agent.speaking": "speaking",
+  "agent.idle":     "idle",
+  "agent.error":    "error",
+  "session.ended":  "idle",
 };
 
-/** Map agent event kind → mouth openness during speaking. */
-function mouthForEvent(kind: string): number {
-  if (kind === "agent.speaking") return 0.6;
-  return 0;
-}
-
 export function App() {
-  const agent = useRef(createAgentService());
+  const agent  = useRef(createAgentService());
   const avatar = useRef(createAvatarService());
 
-  const [appState, setAppState]   = useState<AppState>("setup");
+  // Screen
+  const [screen, setScreen] = useState<AppScreen>("setup");
+
+  // Agent state
   const [avatarState, setAvatarState] = useState<AvatarState>("idle");
-  const [mouthOpen, setMouthOpen] = useState(0);
-  const [agentState, setAgentState] = useState<AgentState>("disconnected");
-  const [lastEvent, setLastEvent]   = useState<string>("—");
+  const [mouthOpen, setMouthOpen]     = useState(0);
+  const [agentState, setAgentState]   = useState<AgentState>("disconnected");
+  const [lastEvent, setLastEvent]    = useState<string>("—");
+
+  // Gateway
   const [gatewayUrl, setGatewayUrl] = useState("");
-  const [authToken, setAuthToken]   = useState("");
-  const [messageLog, setMessageLog] = useState<Array<{ id: number; from: "user" | "nano"; text: string }>>([]);
+  const [authToken, setAuthToken] = useState("");
+
+  // Characters
+  const [packs, setPacks]           = useState<CharacterPackSummary[]>([]);
+  const [selectedPack, setSelectedPack] = useState<CharacterPackDetail | null>(null);
+  const [packLoadError, setPackLoadError] = useState<string>("");
+  const [loadingPacks, setLoadingPacks] = useState(false);
+  const [loadingPack, setLoadingPack]   = useState(false);
+
+  // Chat
+  const [messageLog, setMessageLog] = useState<
+    Array<{ id: number; from: "user" | "nano"; text: string }>
+  >([]);
   const [text, setText] = useState("");
   const msgId = useRef(0);
+
+  // Discover character packs on mount.
+  useEffect(() => {
+    setLoadingPacks(true);
+    listCharacterPacks()
+      .then((p) => { setPacks(p); setLoadingPacks(false); })
+      .catch(() => { setLoadingPacks(false); });
+  }, []);
 
   // Wire agent events → avatar state.
   useEffect(() => {
@@ -46,18 +69,14 @@ export function App() {
       const kind: string = ev.kind;
       setLastEvent(kind);
 
-      // Mouth animation for speaking events.
       if (kind === "agent.speaking") {
         setMouthOpen(0.6);
-        // TODO: read actual audio/speech amplitude from event data when adapter emits it.
         setTimeout(() => setMouthOpen(0), 1500);
       }
 
-      // Avatar state from event kind.
       const next: AvatarState = AGENT_TO_AVATAR[kind] ?? "idle";
       setAvatarState(next);
 
-      // Append message to log when agent sends text.
       if (kind === "session.message") {
         const data = ev.data as AgentEventData;
         if (data && "text" in data && typeof data.text === "string") {
@@ -68,7 +87,6 @@ export function App() {
         }
       }
 
-      // Update agent connection state.
       const status = agent.current.adapter?.getStatus();
       if (status) {
         setAgentState(status.connected ? "connected" : "disconnected");
@@ -77,42 +95,60 @@ export function App() {
     return off;
   }, []);
 
+  // Load selected pack.
+  const handleLoadPack = useCallback(async (packPath: string) => {
+    setLoadingPack(true);
+    setPackLoadError("");
+    setSelectedPack(null);
+    try {
+      const detail = await loadCharacterPack(packPath);
+      setSelectedPack(detail);
+    } catch (err) {
+      setPackLoadError(String(err));
+    } finally {
+      setLoadingPack(false);
+    }
+  }, []);
+
   const handleConnect = useCallback(async () => {
     if (!gatewayUrl.trim()) return;
-    setAppState("idle");
     setAgentState("connecting");
     try {
       await agent.current.connect(gatewayUrl.trim(), authToken.trim());
       setAgentState("connected");
       setAvatarState("idle");
+      setScreen("main");
     } catch {
       setAgentState("error");
-      setAppState("setup");
     }
   }, [gatewayUrl, authToken]);
 
-  const handleSend = useCallback(async (text: string) => {
-    setAvatarState("thinking");
-    setMessageLog((prev) => [
-      ...prev,
-      { id: ++msgId.current, from: "user", text },
-    ]);
-    try {
-      await agent.current.send(text);
-    } catch {
-      setAvatarState("error");
-    }
-  }, []);
+  const handleSend = useCallback(
+    async (text: string) => {
+      setAvatarState("thinking");
+      setMessageLog((prev) => [
+        ...prev,
+        { id: ++msgId.current, from: "user", text },
+      ]);
+      try {
+        await agent.current.send(text);
+      } catch {
+        setAvatarState("error");
+      }
+    },
+    [],
+  );
 
   const handleDisconnect = useCallback(async () => {
     await agent.current.disconnect();
     setAgentState("disconnected");
-    setAppState("setup");
+    setScreen("setup");
     setAvatarState("idle");
+    setMessageLog([]);
   }, []);
 
-  // --- Setup screen ---
-  if (appState === "setup") {
+  // ── Setup screen ─────────────────────────────────────────────────────────
+  if (screen === "setup") {
     return (
       <main className="shell">
         <section className="assistant-card" aria-label="NAIS setup">
@@ -123,9 +159,67 @@ export function App() {
             <p className="eyebrow">NAIS Desktop</p>
             <h1>Connect to nano</h1>
             <p className="summary">
-              Enter your OpenClaw gateway URL and auth token to connect.
+              Select a character pack, then connect to your gateway.
             </p>
 
+            {/* Character selector */}
+            <div className="character-selector">
+              <label htmlFor="pack-select">Character Pack</label>
+              <div className="pack-select-row">
+                <select
+                  id="pack-select"
+                  className="pack-select"
+                  disabled={loadingPacks}
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) handleLoadPack(e.target.value);
+                  }}
+                >
+                  <option value="" disabled>
+                    {loadingPacks ? "Scanning…" : packs.length === 0 ? "No packs found" : "Choose a character…"}
+                  </option>
+                  {packs.map((p) => (
+                    <option key={p.id} value={p.path}>
+                      {p.name} {!p.avatar_enabled && "— no avatar"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {loadingPack && <p className="pack-status">Loading…</p>}
+              {packLoadError && <p className="pack-error">{packLoadError}</p>}
+
+              {selectedPack && (
+                <div className="pack-card">
+                  <div className="pack-card-header">
+                    <span className="pack-name">{selectedPack.name}</span>
+                    <span className={`avatar-badge ${selectedPack.avatar_enabled ? "on" : "off"}`}>
+                      {selectedPack.avatar_enabled
+                        ? `${selectedPack.default_mode} ready`
+                        : "avatar off"}
+                    </span>
+                  </div>
+                  {selectedPack.persona_preview && (
+                    <p className="pack-persona">
+                      {selectedPack.persona_preview}
+                      {selectedPack.persona_preview.length >= 200 ? "…" : ""}
+                    </p>
+                  )}
+                  {selectedPack.live2d_enabled && (
+                    <p className="pack-model">
+                      <span className="model-label">Live2D</span> {selectedPack.live2d_model}
+                    </p>
+                  )}
+                  {selectedPack.vrm_enabled && (
+                    <p className="pack-model">
+                      <span className="model-label">VRM</span> {selectedPack.vrm_model}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Gateway form */}
             <div className="setup-form">
               <label htmlFor="gateway-url">
                 Gateway URL
@@ -153,10 +247,13 @@ export function App() {
                 type="button"
                 className="primary-button"
                 onClick={handleConnect}
-                disabled={!gatewayUrl.trim()}
+                disabled={!gatewayUrl.trim() || agentState === "connecting"}
               >
-                Connect
+                {agentState === "connecting" ? "Connecting…" : "Connect"}
               </button>
+              {agentState === "error" && (
+                <p className="pack-error">Connection failed — check URL and token.</p>
+              )}
             </div>
           </div>
         </section>
@@ -164,11 +261,16 @@ export function App() {
     );
   }
 
-  // --- Main app ---
+  // ── Main screen ───────────────────────────────────────────────────────────
   return (
     <main className="shell app-layout">
-      {/* Left: avatar */}
+      {/* Left: avatar + character info */}
       <section className="avatar-panel" aria-label="NAIS avatar">
+        {selectedPack && (
+          <div className="character-badge">
+            <span className="character-name">{selectedPack.name}</span>
+          </div>
+        )}
         <AvatarCanvas state={avatarState} mouthOpen={mouthOpen} />
         <div className="avatar-state-badge">
           <span className={`agent-dot ${agentState}`} />
@@ -199,7 +301,9 @@ export function App() {
           )}
           {messageLog.map((msg) => (
             <div key={msg.id} className={`message message-${msg.from}`}>
-              <span className="message-sender">{msg.from === "user" ? "You" : "nano"}</span>
+              <span className="message-sender">
+                {msg.from === "user" ? "You" : "nano"}
+              </span>
               <p className="message-text">{msg.text}</p>
             </div>
           ))}
@@ -215,7 +319,10 @@ export function App() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                if (text.trim()) { handleSend(text.trim()); setText(""); }
+                if (text.trim()) {
+                  handleSend(text.trim());
+                  setText("");
+                }
               }
             }}
             value={text}
@@ -224,10 +331,19 @@ export function App() {
             type="button"
             className="send-button"
             disabled={agentState !== "connected" || !text.trim()}
-            onClick={() => { if (text.trim()) { handleSend(text.trim()); setText(""); } }}
+            onClick={() => {
+              if (text.trim()) {
+                handleSend(text.trim());
+                setText("");
+              }
+            }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+            <svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            >
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
           </button>
         </div>
