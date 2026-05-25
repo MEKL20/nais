@@ -24,8 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
 
       - name: Setup Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -36,7 +34,9 @@ jobs:
           workspaces: apps/desktop/src-tauri -> target
 
       - name: Install JavaScript dependencies
-        run: npm ci --no-audit --no-fund
+        run: |
+          npm cache clean --force
+          npm ci --no-audit --no-fund --prefer-online --foreground-scripts
 
       - name: Build frontend
         run: npm run build
