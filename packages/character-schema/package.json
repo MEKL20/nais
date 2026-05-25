@@ -1,0 +1,29 @@
+{
+  "name": "@nais/character-schema",
+  "version": "0.1.0",
+  "description": "Character pack schema, validation, and loader for NAIS",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "validate": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}
