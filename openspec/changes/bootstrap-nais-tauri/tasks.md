@@ -17,6 +17,5 @@
 - [x] Add GitHub Actions workflow for `windows-latest` that uploads `.msi` and `.exe` artifacts.
 - [x] Add CONTRIBUTING.md, docs/STANDARDS.md, ESLint (flat config), Prettier, EditorConfig.
 - [x] Implement character schema package (`packages/character-schema`).
-- [ ] Next: implement `packages/avatar-runtime` contracts.
-- [ ] Next: implement initial avatar runtime contracts (`packages/avatar-runtime`).
+- [x] Implement `packages/avatar-runtime` contracts (avatar-runtime adapter contract, base adapter, Live2D + VRM placeholders, factory).
 - [ ] Next: OpenClaw gateway adapter (`packages/agent-adapter`).
