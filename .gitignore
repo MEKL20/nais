@@ -20,8 +20,6 @@ apps/desktop/src-tauri/target/
 .env.*
 !.env.example
 
-# Package lock (use npm)
-package-lock.json
 
 # IDE
 .vscode/
