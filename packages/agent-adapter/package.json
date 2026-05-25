@@ -1,0 +1,23 @@
+{
+  "name": "@nais/agent-adapter",
+  "version": "0.1.0",
+  "description": "OpenClaw gateway adapter for NAIS desktop app",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ --max-warnings 0",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.0"
+  }
+}

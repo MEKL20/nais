@@ -9,6 +9,9 @@
     },
     {
       "path": "./packages/avatar-runtime/tsconfig.json"
+    },
+    {
+      "path": "./packages/agent-adapter/tsconfig.json"
     }
   ]
 }
