@@ -11,6 +11,7 @@ export {
   type AgentEventData,
   type AgentEventKind,
   type AgentEventLevel,
+  type MessageData,
   type AgentMessage,
   type AgentMessageResult,
   AgentAdapterError,

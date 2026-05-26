@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
 // ---------------------------------------------------------------------------
@@ -29,6 +29,7 @@ pub struct CharacterPackDetail {
     pub states: serde_json::Value,
     pub persona_preview: String,
     pub voice_enabled: bool,
+    pub voice: serde_json::Value,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -53,6 +54,49 @@ fn read_yaml_file(path: &PathBuf) -> Result<serde_json::Value, String> {
     serde_yaml::from_str::<serde_json::Value>(&raw).map_err(|e| format!("invalid yaml: {e}"))
 }
 
+fn repo_character_root_from_cwd() -> Option<PathBuf> {
+    let cwd = std::env::current_dir().ok()?;
+    if cwd.ends_with(Path::new("apps/desktop")) {
+        Some(cwd.join("../../characters"))
+    } else {
+        Some(cwd.join("characters"))
+    }
+}
+
+fn candidate_character_roots(app: Option<&AppHandle>, requested: Option<String>) -> Vec<PathBuf> {
+    let mut roots = Vec::new();
+
+    if let Some(root) = requested.filter(|value| !value.trim().is_empty()) {
+        roots.push(PathBuf::from(root));
+    }
+
+    if let Some(app) = app {
+        if let Ok(resource_dir) = app.path().resource_dir() {
+            roots.push(resource_dir.join("characters"));
+        }
+    }
+
+    if let Some(repo_root) = repo_character_root_from_cwd() {
+        roots.push(repo_root);
+    }
+
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(exe_dir) = exe.parent() {
+            roots.push(exe_dir.join("characters"));
+        }
+    }
+
+    roots.push(PathBuf::from("characters"));
+    roots
+}
+
+fn resolve_character_root(app: Option<&AppHandle>, requested: Option<String>) -> PathBuf {
+    candidate_character_roots(app, requested)
+        .into_iter()
+        .find(|root| root.is_dir())
+        .unwrap_or_else(|| PathBuf::from("characters"))
+}
+
 // ---------------------------------------------------------------------------
 // Tauri Commands
 // ---------------------------------------------------------------------------
@@ -65,11 +109,7 @@ fn nais_ping() -> &'static str {
 /// Return the default character packs root directory.
 #[tauri::command]
 fn default_character_root(app: AppHandle) -> Result<String, String> {
-    let resource_path = app
-        .path()
-        .resource_dir()
-        .map_err(|e| e.to_string())?;
-    let root = resource_path.join("characters");
+    let root = resolve_character_root(Some(&app), None);
     Ok(root.to_string_lossy().to_string())
 }
 
@@ -83,17 +123,11 @@ fn app_cwd() -> Result<String, String> {
 
 /// List all character packs under a root directory.
 #[tauri::command]
-fn list_character_packs(root_dir: Option<String>) -> Result<CharacterPackListResult, String> {
-    let root: PathBuf = if let Some(r) = root_dir {
-        PathBuf::from(r)
-    } else {
-        // Fall back to repo characters/ relative to the binary for dev
-        std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.to_path_buf()))
-            .unwrap_or_else(|| PathBuf::from("."))
-            .join("characters")
-    };
+fn list_character_packs(
+    app: AppHandle,
+    root_dir: Option<String>,
+) -> Result<CharacterPackListResult, String> {
+    let root = resolve_character_root(Some(&app), root_dir);
 
     if !root.is_dir() {
         return Ok(CharacterPackListResult { packs: vec![] });
@@ -187,9 +221,23 @@ fn load_character_pack(pack_dir: String) -> Result<CharacterPackDetail, String> 
         .map(|c| c.chars().take(200).collect::<String>())
         .unwrap_or_default();
 
-    let voice_enabled = yaml
-        .get("voice")
-        .and_then(|v| v.get("enabled"))
+    let voice_file = yaml.get("voice")
+        .and_then(|v| v.get("file"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("voice.yaml");
+    let voice_path = pack_path.join(voice_file);
+    let voice = read_yaml_file(&voice_path).unwrap_or_else(|_| serde_json::json!({
+        "enabled": false,
+        "provider": null,
+        "voice_id": null,
+        "speed": 1.0,
+        "pitch": 0,
+        "volume": 1.0,
+        "style": "",
+        "language": "en"
+    }));
+    let voice_enabled = voice
+        .get("enabled")
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
 
@@ -206,6 +254,7 @@ fn load_character_pack(pack_dir: String) -> Result<CharacterPackDetail, String> 
         states,
         persona_preview,
         voice_enabled,
+        voice,
     })
 }
 

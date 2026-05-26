@@ -1,48 +1,108 @@
-// CLI for validating character packs
-// Usage: npx tsx src/cli.ts <character-pack-dir>
+#!/usr/bin/env node
+// NAIS Character Schema CLI
 
-import { resolve } from "path";
-import { loadCharacterPack, listCharacterPacks, LoaderError } from "./loader.js";
-import { CharacterPackSchema } from "./schema.js";
+import { join, resolve } from "node:path";
 
-const root = resolve(process.argv[2] ?? "./characters");
-const packs = listCharacterPacks(root);
+import { generatePack } from "./generate.js";
+import { listCharacterPacks, loadCharacterPack } from "./loader.js";
 
-if (packs.length === 0) {
-  console.log(`No character packs found under ${root}`);
-  process.exit(0);
-}
+const [cmd, ...args] = process.argv.slice(2);
 
-console.log(`Validating ${packs.length} character pack(s)...\n`);
-let allOk = true;
-
-for (const packPath of packs) {
-  try {
-    const pack = loadCharacterPack(packPath);
-    const validation = CharacterPackSchema.safeParse(pack);
-    if (!validation.success) {
-      console.error(`❌ ${packPath}`);
-      validation.error.issues.forEach((i) =>
-        console.error(`   - ${i.path.join(".")}: ${i.message}`),
-      );
-      allOk = false;
-    } else {
-      const enabled =
-        pack.character.avatar.modes.live2d.enabled || pack.character.avatar.modes.vrm.enabled;
-      console.log(
-        `✅ ${pack.character.name} (${packPath}) — ${enabled ? "avatar enabled" : "no avatar enabled"}`,
-      );
+async function main(): Promise<void> {
+  switch (cmd) {
+    case "generate": {
+      const opts = parseGenerateArgs(args);
+      const dir = generatePack(opts);
+      console.log(`Created character pack at: ${dir}`);
+      break;
     }
-  } catch (err) {
-    if (err instanceof LoaderError) {
-      console.error(`❌ ${packPath}`);
-      console.error(`   ${err.message}`);
-    } else {
-      console.error(`❌ ${packPath}: ${err}`);
+    case "list": {
+      const root = args[0] ?? join(process.cwd(), "characters");
+      const packPaths = listCharacterPacks(root);
+      if (packPaths.length === 0) {
+        console.log("No character packs found.");
+      } else {
+        for (const packPath of packPaths) {
+          const pack = loadCharacterPack(packPath);
+          const avatarEnabled =
+            pack.character.avatar.modes.live2d.enabled || pack.character.avatar.modes.vrm.enabled;
+          console.log(
+            `  ${pack.character.id}  -  ${pack.character.name}${avatarEnabled ? " avatar" : ""}`,
+          );
+        }
+        console.log(`\n${packPaths.length} pack(s) total.`);
+      }
+      break;
     }
-    allOk = false;
+    case "validate": {
+      const packPath = args[0];
+      if (!packPath) {
+        console.error("Usage: nais-character-schema validate <path>");
+        process.exit(1);
+      }
+      try {
+        const pack = loadCharacterPack(packPath);
+        const avatarEnabled =
+          pack.character.avatar.modes.live2d.enabled || pack.character.avatar.modes.vrm.enabled;
+        console.log(`Pack "${pack.character.id}" is valid.`);
+        console.log(
+          `   Avatar: ${pack.character.avatar.default_mode} (${avatarEnabled ? "enabled" : "no files"})`,
+        );
+        console.log(
+          `   Voice: ${pack.voice.enabled ? `enabled (${pack.voice.provider ?? "browser"})` : "disabled"}`,
+        );
+      } catch (error) {
+        console.error(`Invalid: ${(error as Error).message}`);
+        process.exit(1);
+      }
+      break;
+    }
+    default:
+      console.log(`NAIS Character Schema CLI
+
+Commands:
+  generate  --id <id> --name <name> [--author <author>] [--avatar vrm|live2d] [--desc <desc>] [--out characters]
+  list [characters-root]
+  validate <pack-path>
+`);
+      process.exit(cmd ? 1 : 0);
   }
 }
 
-console.log("");
-process.exit(allOk ? 0 : 1);
+function parseGenerateArgs(args: string[]): Parameters<typeof generatePack>[0] {
+  const out: Record<string, string> = {};
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg?.startsWith("--")) {
+      out[arg.slice(2)] = args[i + 1] ?? "";
+      i += 1;
+    }
+  }
+
+  if (!out.id || !out.name) {
+    console.error(
+      "Usage: nais-character-schema generate --id <id> --name <name> [--author <author>] [--avatar vrm|live2d] [--desc <desc>] [--out characters]",
+    );
+    process.exit(1);
+  }
+
+  const avatarMode = out.avatar ?? "vrm";
+  if (avatarMode !== "vrm" && avatarMode !== "live2d") {
+    console.error("Invalid --avatar value. Expected 'vrm' or 'live2d'.");
+    process.exit(1);
+  }
+
+  return {
+    id: out.id,
+    name: out.name,
+    author: out.author,
+    avatarMode,
+    description: out.desc ?? "",
+    outDir: out.out ? resolve(out.out) : join(process.cwd(), "characters"),
+  };
+}
+
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});

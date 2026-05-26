@@ -15,6 +15,7 @@
   "dependencies": {
     "@nais/avatar-runtime": "workspace:*",
     "@nais/agent-adapter": "workspace:*",
+    "@nais/character-schema": "workspace:*",
     "@tauri-apps/api": "^2.11.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",

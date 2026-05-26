@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "smoke:desktop-avatar": "node scripts/smoke-desktop-avatar.mjs"
   },
   "packageManager": "pnpm@10.24.0",
   "devDependencies": {

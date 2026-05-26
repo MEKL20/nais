@@ -1,9 +1,7 @@
 // Avatar runtime factory helpers.
 
-import { Live2DAvatarRuntimeAdapter } from "./adapters/live2d.js";
-import { VRMAvatarRuntimeAdapter } from "./adapters/vrm.js";
-import { AvatarRuntimeAdapter } from "./runtime.js";
-import { AvatarRuntimeError, AvatarRuntimeKind, AvatarStateMap } from "./types.js";
+import type { AvatarRuntimeAdapter } from "./runtime.js";
+import { AvatarRuntimeError, type AvatarRuntimeKind, type AvatarStateMap } from "./types.js";
 
 export interface CreateAvatarRuntimeOptions {
   readonly kind: AvatarRuntimeKind;
@@ -11,12 +9,18 @@ export interface CreateAvatarRuntimeOptions {
 }
 
 /** Create an avatar runtime adapter for the selected backend. */
-export function createAvatarRuntime(options: CreateAvatarRuntimeOptions): AvatarRuntimeAdapter {
+export async function createAvatarRuntime(
+  options: CreateAvatarRuntimeOptions,
+): Promise<AvatarRuntimeAdapter> {
   switch (options.kind) {
-    case "live2d":
+    case "live2d": {
+      const { Live2DAvatarRuntimeAdapter } = await import("./adapters/live2d.js");
       return new Live2DAvatarRuntimeAdapter({ stateMap: options.stateMap });
-    case "vrm":
+    }
+    case "vrm": {
+      const { VRMAvatarRuntimeAdapter } = await import("./adapters/vrm.js");
       return new VRMAvatarRuntimeAdapter({ stateMap: options.stateMap });
+    }
     default:
       throw new AvatarRuntimeError(`Unsupported avatar runtime: ${String(options.kind)}`, {
         code: "AVATAR_RUNTIME_UNSUPPORTED_KIND",

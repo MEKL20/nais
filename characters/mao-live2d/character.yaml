@@ -1,0 +1,29 @@
+id: 'mao-live2d'
+name: 'Mao Live2D Sample'
+type: 'manual'
+source:
+  kind: 'local'
+  consent: true
+  url: 'https://github.com/Live2D/CubismWebSamples/tree/4-r.7/Samples/Resources/Mao'
+  license: 'Live2D Free Material License'
+avatar:
+  default_mode: 'live2d'
+  modes:
+    live2d:
+      enabled: true
+      model: './live2d/Mao.model3.json'
+    vrm:
+      enabled: false
+      model: './avatar3d/model.vrm'
+persona:
+  file: './persona.md'
+voice:
+  file: './voice.yaml'
+states:
+  idle: { expression: 'exp_01', motion: 'Idle@0' }
+  listening: { expression: 'exp_02', motion: 'Idle@1' }
+  thinking: { expression: 'exp_03', motion: 'Idle@2' }
+  speaking: { expression: 'exp_04', motion: 'TapBody@0' }
+  success: { expression: 'exp_05', motion: 'TapBody@1' }
+  warning: { expression: 'exp_06', motion: 'TapBody@0' }
+  error: { expression: 'exp_07', motion: 'TapBody@1' }

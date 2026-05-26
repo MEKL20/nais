@@ -18,13 +18,5 @@ export {
   type AvatarStateMapping,
   type LookAtTarget,
 } from "./types.js";
-export {
-  LIVE2D_CAPABILITIES,
-  Live2DAvatarRuntimeAdapter,
-  type Live2DAvatarRuntimeOptions,
-} from "./adapters/live2d.js";
-export {
-  VRM_CAPABILITIES,
-  VRMAvatarRuntimeAdapter,
-  type VRMAvatarRuntimeOptions,
-} from "./adapters/vrm.js";
+export type { Live2DAvatarRuntimeOptions } from "./adapters/live2d.js";
+export type { VRMAvatarRuntimeOptions } from "./adapters/vrm.js";

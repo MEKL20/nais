@@ -2,6 +2,8 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
+import type { VoiceYaml } from "@nais/character-schema";
+
 export interface CharacterPackSummary {
   id: string;
   name: string;
@@ -22,6 +24,7 @@ export interface CharacterPackDetail {
   states: Record<string, { expression: string; motion: string }>;
   persona_preview: string;
   voice_enabled: boolean;
+  voice?: VoiceYaml;
 }
 
 /** Fetch the default character packs root directory (packaged app resource path). */
@@ -36,25 +39,26 @@ export async function getAppCwd(): Promise<string> {
 
 /**
  * List all character packs under a directory.
- * If no rootDir is provided, auto-detects by trying app_cwd + "/characters".
+ * If no rootDir is provided, the Rust command resolves the best runtime path:
+ * packaged resources first, then repo/dev fallbacks.
  */
 export async function listCharacterPacks(
   rootDir?: string,
 ): Promise<CharacterPackSummary[]> {
-  let root = rootDir;
-  if (!root) {
-    try {
-      const cwd = await getAppCwd();
-      root = `${cwd}/characters`;
-    } catch {
-      root = "./characters";
-    }
-  }
   const result = await invoke<{ packs: CharacterPackSummary[] }>(
     "list_character_packs",
-    { rootDir: root },
+    { rootDir },
   );
   return result.packs;
+}
+
+/** Convert an absolute local asset path to a URL loadable by the current runtime. */
+export function characterAssetUrl(filePath: string): string {
+  const tauriInternals = globalThis.window?.__TAURI_INTERNALS__;
+  if (tauriInternals) return tauriInternals.convertFileSrc(filePath);
+
+  const normalizedPath = filePath.replaceAll("\\\\", "/");
+  return `/@fs${normalizedPath.startsWith("/") ? "" : "/"}${normalizedPath}`;
 }
 
 /** Load full details for a specific character pack. */

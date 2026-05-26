@@ -1,0 +1,43 @@
+id: pixiv-vrm-sample
+name: Pixiv VRM Sample
+type: manual
+source:
+  kind: local
+  consent: true
+  url: https://github.com/pixiv/three-vrm/blob/dev/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm
+  license: See upstream three-vrm repository and embedded VRM metadata
+avatar:
+  default_mode: vrm
+  modes:
+    live2d:
+      enabled: false
+      model: ./live2d/model3.json
+    vrm:
+      enabled: true
+      model: ./vrm/VRM1_Constraint_Twist_Sample.vrm
+persona:
+  file: ./persona.md
+voice:
+  file: ./voice.yaml
+states:
+  idle:
+    expression: neutral
+    motion: idle
+  listening:
+    expression: neutral
+    motion: idle
+  thinking:
+    expression: relaxed
+    motion: idle
+  speaking:
+    expression: happy
+    motion: idle
+  success:
+    expression: happy
+    motion: idle
+  warning:
+    expression: surprised
+    motion: idle
+  error:
+    expression: sad
+    motion: idle

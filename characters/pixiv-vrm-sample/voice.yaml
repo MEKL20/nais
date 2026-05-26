@@ -1,0 +1,8 @@
+enabled: false
+provider: null
+voice_id: null
+speed: 1.0
+pitch: 0
+volume: 1.0
+style: default
+language: en

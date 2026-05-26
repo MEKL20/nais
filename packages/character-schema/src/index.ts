@@ -31,3 +31,6 @@ export {
   LoaderError,
   type LoaderOptions,
 } from "./loader.js";
+
+// Generator
+export { generatePack, type GenerateOptions } from "./generate.js";

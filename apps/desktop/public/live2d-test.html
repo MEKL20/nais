@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live2D Core Debug Test</title>
+  <script src="/live2dcubismcore.min.js"></script>
+</head>
+<body>
+  <h1>Live2D Core Debug</h1>
+  <pre id="output">Loading...</pre>
+  <script>
+    const out = document.getElementById('output');
+    function log(...args) {
+      console.log(...args);
+      out.textContent += args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ') + '\n';
+    }
+    try {
+      log('Live2DCubismCore type:', typeof Live2DCubismCore);
+      log('Live2DCubismCore keys:', Object.keys(Live2DCubismCore || {}).slice(0, 10));
+      log('_isStarted:', Live2DCubismCore ? (Live2DCubismCore._isStarted ?? 'undefined') : 'N/A');
+      log('Version:', Live2DCubismCore?.Version?.csmGetVersion?.());
+      log('Has Moc:', typeof Live2DCubismCore?.Moc);
+      log('Has Model:', typeof Live2DCubismCore?.Model);
+    } catch(e) {
+      log('ERROR:', e.message);
+    }
+  </script>
+  <!-- Load pixi-live2d-display cubism4 -->
+  <script type="module">
+    import '/src/modules/live2d.js';
+    window.__NAIS_LIVE2D_READY__ = true;
+  </script>
+</body>
+</html>

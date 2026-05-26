@@ -25,7 +25,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   },
   "bundle": {
@@ -35,6 +39,9 @@
     "publisher": "MEKL",
     "category": "Productivity",
     "shortDescription": "NAIS desktop assistant",
-    "longDescription": "NAIS \u2014 Nano Assistant Intelligence System desktop client."
+    "longDescription": "NAIS \u2014 Nano Assistant Intelligence System desktop client.",
+    "resources": {
+      "../../../characters": "characters"
+    }
   }
 }

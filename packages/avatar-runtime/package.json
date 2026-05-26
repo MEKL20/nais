@@ -18,6 +18,14 @@
     "lint:fix": "eslint src/ --fix"
   },
   "devDependencies": {
+    "@pixiv/three-vrm": "^3.5.3",
+    "@types/three": "^0.170.0",
+    "live2dcubismcore": "1.0.2",
+    "pixi.js": "^7.4.3",
+    "three": "^0.170.0",
     "typescript": "^6.0.0"
+  },
+  "dependencies": {
+    "pixi-live2d-display": "0.5.0-beta"
   }
 }

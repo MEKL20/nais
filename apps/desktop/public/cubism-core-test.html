@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head><title>Cubism Core Direct Test</title></head>
+<body>
+<pre id="out">loading...</pre>
+<script src="/live2dcubismcore.min.js"></script>
+<script>
+(function() {
+  var out = document.getElementById('out');
+  function log() {
+    var msg = Array.from(arguments).join(' ');
+    console.log(msg);
+    out.textContent += msg + '\n';
+  }
+  try {
+    log('1. typeof Live2DCubismCore:', typeof Live2DCubismCore);
+    log('2. Live2DCubismCore keys:', Object.keys(Live2DCubismCore || {}).join(', '));
+    log('3. _isStarted:', Live2DCubismCore ? Live2DCubismCore._isStarted : 'N/A');
+    log('4. hasVersion:', typeof (Live2DCubismCore && Live2DCubismCore.Version));
+    log('5. hasMoc:', typeof (Live2DCubismCore && Live2DCubismCore.Moc));
+    log('6. hasModel:', typeof (Live2DCubismCore && Live2DCubismCore.Model));
+    log('7. hasMemory:', typeof (Live2DCubismCore && Live2DCubismCore.Memory));
+    if (typeof Live2DCubismCore !== 'undefined' && Live2DCubismCore.Version) {
+      try {
+        var v = Live2DCubismCore.Version.csmGetVersion();
+        log('8. version:', v, 'hex=0x' + v.toString(16));
+      } catch(e) {
+        log('8. version ERROR:', e.message);
+      }
+    }
+    if (typeof Live2DCubismCore !== 'undefined' && Live2DCubismCore.Memory && typeof Live2DCubismCore.Memory.initializeAmountOfMemory === 'function') {
+      try {
+        Live2DCubismCore.Memory.initializeAmountOfMemory(1024 * 1024 * 16);
+        log('9. Memory.initializeAmountOfMemory: ok');
+      } catch(e) {
+        log('9. Memory.init ERROR:', e.message, e.stack ? e.stack.split('\n')[1] : '');
+      }
+    } else {
+      log('9. Memory.initializeAmountOfMemory: not found');
+    }
+    log('DONE');
+  } catch(e) {
+    log('OUTER ERROR:', e.message);
+  }
+})();
+</script>
+</body>
+</html>

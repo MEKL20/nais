@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live2D Core Simple Test</title>
+  <script src="/live2dcubismcore.min.js"></script>
+</head>
+<body>
+  <h1>Live2D Core Diagnostic</h1>
+  <pre id="output">Loading...</pre>
+  <script>
+    const out = document.getElementById('output');
+    function log() {
+      const args = Array.from(arguments);
+      console.log.apply(console, args);
+      out.textContent += args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ') + '\n';
+    }
+    try {
+      log('1. typeof Live2DCubismCore:', typeof Live2DCubismCore);
+      log('2. window.Live2DCubismCore === Live2DCubismCore:', window.Live2DCubismCore === Live2DCubismCore);
+      log('3. globalThis.Live2DCubismCore === Live2DCubismCore:', globalThis.Live2DCubismCore === Live2DCubismCore);
+      log('4. Live2DCubismCore._isStarted:', Live2DCubismCore?._isStarted);
+      log('5. Has Version:', typeof Live2DCubismCore?.Version?.csmGetVersion);
+      log('6. Has Moc:', typeof Live2DCubismCore?.Moc);
+      log('7. Has Model:', typeof Live2DCubismCore?.Model);
+      if (typeof Live2DCubismCore?.Version?.csmGetVersion === 'function') {
+        try {
+          const v = Live2DCubismCore.Version.csmGetVersion();
+          log('8. Core version:', v, 'hex:', v.toString(16));
+        } catch(e) { log('8. Version error:', e.message); }
+      }
+      if (typeof Live2DCubismCore?.Moc?.fromArrayBuffer === 'function') {
+        try {
+          // Try to load the Mao moc3 file
+          fetch('/characters/mao-live2d/live2d/Mao.moc3')
+            .then(r => r.arrayBuffer())
+            .then(buf => {
+              log('9. Fetched moc3, size:', buf.byteLength);
+              const moc = Live2DCubismCore.Moc.fromArrayBuffer(buf);
+              log('10. Moc created:', moc, 'ptr:', moc?._ptr);
+              if (moc) {
+                const model = Live2DCubismCore.Model.fromMoc(moc);
+                log('11. Model created:', model, 'ptr:', model?._ptr);
+              }
+            })
+            .catch(e => log('9. Fetch error:', e.message));
+        } catch(e) { log('9. Moc error:', e.message); }
+      }
+    } catch(e) {
+      log('ERROR:', e.message);
+    }
+  </script>
+</body>
+</html>
