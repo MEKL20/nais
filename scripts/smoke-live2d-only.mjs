@@ -4,12 +4,21 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+const programFiles = process.env["ProgramFiles"] ?? "C:\\Program Files";
+const programFilesX86 = process.env["ProgramFiles(x86)"] ?? "C:\\Program Files (x86)";
+const localAppData = process.env.LOCALAPPDATA ?? "";
 const chromeCandidates = [
   process.env.CHROME_BIN,
+  `${programFiles}\\Google\\Chrome\\Application\\chrome.exe`,
+  `${programFilesX86}\\Google\\Chrome\\Application\\chrome.exe`,
+  `${programFiles}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  `${programFilesX86}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  localAppData ? `${localAppData}\\Google\\Chrome\\Application\\chrome.exe` : null,
   "/home/ubuntu/.cache/ms-playwright/chromium-1223/chrome-linux64/chrome",
   "/usr/bin/chromium",
   "/usr/bin/chromium-browser",
   "/usr/bin/google-chrome",
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 ].filter(Boolean);
 const chrome = chromeCandidates.find((c) => fs.existsSync(c));
 if (!chrome) {
@@ -26,53 +35,61 @@ async function waitForUrl(url, timeoutMs = 15_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
-      const res = await new Promise((res, rej) => {
-        const req = require("http").request(url, (r) => { res(r); });
-        req.on("error", rej);
-        req.end();
-      });
-      let body = "";
-      await new Promise((resolve) => {
-        res.on("data", (d) => { body += d; });
-        res.on("end", resolve);
-      });
-      res.body = body;
-      return res;
-    } catch { await sleep(100); }
+      const res = await fetch(url);
+      if (res.ok) return res;
+    } catch {
+      // retry until timeout
+    }
+    await sleep(100);
   }
   throw new Error(`Timeout: ${url}`);
 }
 
 async function connectPageCdp() {
   const res = await waitForUrl(`http://127.0.0.1:${port}/json`);
-  const pages = JSON.parse(res.body);
+  const pages = await res.json();
   const page = pages.find((e) => e.type === "page") ?? pages[0];
   if (!page?.webSocketDebuggerUrl) throw new Error("No CDP websocket");
 
   const ws = new WebSocket(page.webSocketDebuggerUrl);
-  await new Promise((res, rej) => { ws.on("open", res); ws.on("error", rej); });
+  await new Promise((resolve, reject) => {
+    ws.addEventListener("open", resolve, { once: true });
+    ws.addEventListener("error", reject, { once: true });
+  });
 
   let id = 0;
-  const send = (method, params = {}) => new Promise((res, rej) => {
-    const mid = ++id;
-    ws.on("message", function handler(ev) {
-      const m = JSON.parse(ev.toString());
-      if (m.id !== mid) return;
-      ws.off("message", handler);
-      m.error ? rej(new Error(JSON.stringify(m.error))) : res(m.result);
+  const send = (method, params = {}) =>
+    new Promise((resolve, reject) => {
+      const mid = ++id;
+      const handler = (ev) => {
+        const m = JSON.parse(ev.data.toString());
+        if (m.id !== mid) return;
+        ws.removeEventListener("message", handler);
+        if (m.error) reject(new Error(JSON.stringify(m.error)));
+        else resolve(m.result);
+      };
+      ws.addEventListener("message", handler);
+      ws.send(JSON.stringify({ id: mid, method, params }));
     });
-    ws.send(JSON.stringify({ id: mid, method, params }));
-  });
 
   return { ws, send };
 }
 
-const chromeProcess = spawn(chrome, [
-  "--headless=new", "--no-sandbox", "--enable-unsafe-swiftshader",
-  "--ignore-gpu-blocklist", "--use-gl=swiftshader",
-  "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`,
-  `--user-data-dir=${userDataDir}`, devUrl,
-], { stdio: ["ignore", "pipe", "pipe"] });
+const chromeProcess = spawn(
+  chrome,
+  [
+    "--headless=new",
+    "--no-sandbox",
+    "--enable-unsafe-swiftshader",
+    "--ignore-gpu-blocklist",
+    "--use-gl=swiftshader",
+    "--remote-debugging-address=127.0.0.1",
+    `--remote-debugging-port=${port}`,
+    `--user-data-dir=${userDataDir}`,
+    devUrl,
+  ],
+  { stdio: ["ignore", "pipe", "pipe"] },
+);
 
 try {
   await waitForUrl(`http://127.0.0.1:${port}/json/version`);
@@ -99,10 +116,16 @@ try {
     returnByValue: true,
   });
 
-  console.log(JSON.stringify({
-    diagnosticUrl: devUrl,
-    pageState: result,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        diagnosticUrl: devUrl,
+        pageState: result,
+      },
+      null,
+      2,
+    ),
+  );
 
   ws.close();
   chromeProcess.kill("SIGTERM");

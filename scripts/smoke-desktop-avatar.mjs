@@ -5,16 +5,28 @@ import os from "node:os";
 import path from "node:path";
 
 const repoRoot = path.resolve(new URL("..", import.meta.url).pathname);
+const programFiles = process.env["ProgramFiles"] ?? "C:\\Program Files";
+const programFilesX86 = process.env["ProgramFiles(x86)"] ?? "C:\\Program Files (x86)";
+const localAppData = process.env.LOCALAPPDATA ?? "";
 const chromeCandidates = [
   process.env.CHROME_BIN,
+  // Windows
+  `${programFiles}\\Google\\Chrome\\Application\\chrome.exe`,
+  `${programFilesX86}\\Google\\Chrome\\Application\\chrome.exe`,
+  `${programFiles}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  `${programFilesX86}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  localAppData ? `${localAppData}\\Google\\Chrome\\Application\\chrome.exe` : null,
+  // Linux / CI
   "/home/ubuntu/.cache/ms-playwright/chromium-1223/chrome-linux64/chrome",
   "/usr/bin/chromium",
   "/usr/bin/chromium-browser",
   "/usr/bin/google-chrome",
+  // macOS
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 ].filter(Boolean);
 const chrome = chromeCandidates.find((candidate) => fs.existsSync(candidate));
 if (!chrome) {
-  console.error("No Chromium/Chrome executable found. Set CHROME_BIN to run smoke:desktop-avatar.");
+  console.error("No Chromium/Chrome/Edge executable found. Set CHROME_BIN to run smoke:desktop-avatar.");
   process.exit(1);
 }
 

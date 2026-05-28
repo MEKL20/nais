@@ -4,11 +4,20 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+const programFiles = process.env["ProgramFiles"] ?? "C:\\Program Files";
+const programFilesX86 = process.env["ProgramFiles(x86)"] ?? "C:\\Program Files (x86)";
+const localAppData = process.env.LOCALAPPDATA ?? "";
 const chrome = [
   process.env.CHROME_BIN,
+  `${programFiles}\\Google\\Chrome\\Application\\chrome.exe`,
+  `${programFilesX86}\\Google\\Chrome\\Application\\chrome.exe`,
+  `${programFiles}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  `${programFilesX86}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  localAppData ? `${localAppData}\\Google\\Chrome\\Application\\chrome.exe` : null,
   "/home/ubuntu/.cache/ms-playwright/chromium-1223/chrome-linux64/chrome",
   "/usr/bin/chromium",
   "/usr/bin/google-chrome",
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 ].find((c) => c && fs.existsSync(c));
 if (!chrome) { console.error("No Chrome"); process.exit(1); }
 
