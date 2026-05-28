@@ -14,7 +14,7 @@
     "rootDir": "./src",
     "composite": true,
     "noEmit": true,
-    "types": ["node"],
+    "types": ["node", "vitest/globals"],
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -27,7 +27,7 @@ async function main(): Promise<void> {
           const avatarEnabled =
             pack.character.avatar.modes.live2d.enabled || pack.character.avatar.modes.vrm.enabled;
           console.log(
-            `  ${pack.character.id}  -  ${pack.character.name}${avatarEnabled ? " avatar" : ""}`,
+            `  ${pack.character.id}  -  ${pack.character.name}${avatarEnabled ? "  avatar" : ""}`,
           );
         }
         console.log(`\n${packPaths.length} pack(s) total.`);
