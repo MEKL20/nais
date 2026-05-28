@@ -6,6 +6,8 @@ import { AvatarRuntimeError, type AvatarRuntimeKind, type AvatarStateMap } from 
 export interface CreateAvatarRuntimeOptions {
   readonly kind: AvatarRuntimeKind;
   readonly stateMap?: AvatarStateMap;
+  /** Optional Cubism parameter id for mouth-open lipsync (Live2D only). */
+  readonly mouthParamId?: string;
 }
 
 /** Create an avatar runtime adapter for the selected backend. */
@@ -15,7 +17,10 @@ export async function createAvatarRuntime(
   switch (options.kind) {
     case "live2d": {
       const { Live2DAvatarRuntimeAdapter } = await import("./adapters/live2d.js");
-      return new Live2DAvatarRuntimeAdapter({ stateMap: options.stateMap });
+      return new Live2DAvatarRuntimeAdapter({
+        stateMap: options.stateMap,
+        mouthParamId: options.mouthParamId,
+      });
     }
     case "vrm": {
       const { VRMAvatarRuntimeAdapter } = await import("./adapters/vrm.js");

@@ -1,7 +1,7 @@
 // Live2D adapter — implements AvatarRuntimeAdapter via pixi-live2d-display + pixi.js.
 
 import * as PIXI from "pixi.js";
-import { Live2DModel, MotionPriority, cubism4Ready, startUpCubism4 } from "pixi-live2d-display/cubism4";
+import { Live2DModel, MotionPriority, startUpCubism4 } from "pixi-live2d-display/cubism4";
 
 import { BaseAvatarRuntimeAdapter } from "../base.js";
 import {
@@ -25,15 +25,30 @@ export const LIVE2D_CAPABILITIES: AvatarRuntimeCapabilities = {
 
 export interface Live2DAvatarRuntimeOptions {
   readonly stateMap?: AvatarStateMap;
+  /**
+   * Override the Cubism parameter id used for mouth-open lipsync.
+   * If unset, the adapter probes the model for the first available id from
+   * the standard candidates: ParamMouthOpenY, ParamMouthOpen, ParamMouthA.
+   */
+  readonly mouthParamId?: string;
 }
+
+const DEFAULT_MOUTH_PARAM_CANDIDATES = [
+  "ParamMouthOpenY",
+  "ParamMouthOpen",
+  "ParamMouthA",
+];
 
 export class Live2DAvatarRuntimeAdapter extends BaseAvatarRuntimeAdapter {
   private _app: PIXI.Application | null = null;
   private _model: Live2DModel | null = null;
   private _container: HTMLElement | null = null;
-  private _mouthParamId: string = "ParamMouthOpen";
+  private _mouthParamOverride: string | null = null;
+  private _mouthParamId: string = "ParamMouthOpenY";
   private _targetMouthOpen: number = 0;
   private _currentMouthOpen: number = 0;
+  private _animationFrameId: number | null = null;
+  private _lastTickMs: number = 0;
 
   constructor(options: Live2DAvatarRuntimeOptions = {}) {
     super({
@@ -42,6 +57,7 @@ export class Live2DAvatarRuntimeAdapter extends BaseAvatarRuntimeAdapter {
       capabilities: LIVE2D_CAPABILITIES,
       stateMap: options.stateMap,
     });
+    this._mouthParamOverride = options.mouthParamId ?? null;
   }
 
   override async loadModel(
@@ -116,6 +132,8 @@ export class Live2DAvatarRuntimeAdapter extends BaseAvatarRuntimeAdapter {
     model.eventMode = "static";
     model.cursor = "pointer";
 
+    this._mouthParamId = this._resolveMouthParamId(model);
+
     this.status = {
       ...this.status,
       loaded: true,
@@ -124,10 +142,13 @@ export class Live2DAvatarRuntimeAdapter extends BaseAvatarRuntimeAdapter {
       mouthOpen: 0,
     };
 
+    this._startRenderLoop();
+
     return { ok: true };
   }
 
   override async unloadModel(): Promise<import("../types.js").AvatarRuntimeResult> {
+    this._stopRenderLoop();
     if (this._model) {
       try {
         this._model.destroy();
@@ -231,13 +252,76 @@ export class Live2DAvatarRuntimeAdapter extends BaseAvatarRuntimeAdapter {
     return { ok: true };
   }
 
-  private _ensureCubismCoreStarted(): void {
-    // Fire-and-forget async ready — Live2DModel.from() awaits it internally.
-    cubism4Ready().then(() => {
-      console.log("[Live2D] cubism4Ready() resolved ok");
-    }).catch((err: unknown) => {
-      console.error("[Live2D] cubism4Ready() rejected:", err, JSON.stringify(err));
-    });
+  private _startRenderLoop(): void {
+    this._stopRenderLoop();
+    this._lastTickMs = performance.now();
+    const tick = (): void => {
+      this._animationFrameId = requestAnimationFrame(tick);
+      const now = performance.now();
+      const deltaMs = now - this._lastTickMs;
+      this._lastTickMs = now;
+      this.update(deltaMs);
+    };
+    this._animationFrameId = requestAnimationFrame(tick);
+  }
+
+  private _stopRenderLoop(): void {
+    if (this._animationFrameId !== null) {
+      cancelAnimationFrame(this._animationFrameId);
+      this._animationFrameId = null;
+    }
+  }
+
+  /**
+   * Pick the mouth-open parameter id this model exposes.
+   *
+   * The Cubism core model exposes parameters via either an `_parameterIds`
+   * array or `getParameterCount()` + `getParameterId(i)`. Different SDK
+   * builds expose different shapes, so we try multiple introspection paths
+   * before falling back to the first candidate name.
+   */
+  private _resolveMouthParamId(model: Live2DModel): string {
+    if (this._mouthParamOverride) return this._mouthParamOverride;
+    const fallback = DEFAULT_MOUTH_PARAM_CANDIDATES[0] ?? "ParamMouthOpenY";
+
+    const ids = this._collectParameterIds(model);
+    if (ids.length === 0) return fallback;
+
+    for (const candidate of DEFAULT_MOUTH_PARAM_CANDIDATES) {
+      if (ids.includes(candidate)) return candidate;
+    }
+    return fallback;
+  }
+
+  private _collectParameterIds(model: Live2DModel): string[] {
+    const internal = model.internalModel as
+      | {
+          coreModel?: {
+            _parameterIds?: string[];
+            getParameterCount?: () => number;
+            getParameterId?: (_index: number) => string;
+          };
+        }
+      | undefined;
+    const core = internal?.coreModel;
+    if (!core) return [];
+
+    if (Array.isArray(core._parameterIds)) {
+      return core._parameterIds;
+    }
+
+    const count = core.getParameterCount?.() ?? 0;
+    if (count <= 0 || !core.getParameterId) return [];
+
+    const ids: string[] = [];
+    for (let i = 0; i < count; i += 1) {
+      try {
+        ids.push(core.getParameterId(i));
+      } catch {
+        // Ignore.
+      }
+    }
+    return ids;
   }
 
   private _applyMouthOpen(value: number): void {
