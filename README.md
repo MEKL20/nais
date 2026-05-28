@@ -52,7 +52,6 @@ NAIS is designed to be:
 ```
 NAIS
 ├── apps/desktop/         # Tauri desktop application (React frontend + Rust backend)
-├── crates/nais-bridge/   # Rust ↔ JavaScript IPC bridge
 ├── packages/
 │   ├── agent-adapter/    # OpenClaw gateway adapter (and future adapters)
 │   ├── avatar-runtime/  # Live2D + VRM rendering contracts & placeholder adapters
@@ -91,8 +90,6 @@ nais/
 │       │   ├── tauri.conf.json
 │       │   └── icons/         # App icons
 │       └── package.json
-├── crates/
-│   └── nais-bridge/           # IPC bridge (future)
 ├── packages/
 │   ├── agent-adapter/         # OpenClaw adapter (future)
 │   ├── avatar-runtime/        # Avatar contracts (future)
@@ -122,7 +119,21 @@ nais/
 | Node.js                   | ≥ 20    | LTS recommended               |
 | pnpm                      | ≥ 9     | Install via `corepack enable` |
 | Rust                      | ≥ 1.75  | `rustup install stable`       |
-| Visual Studio Build Tools | Latest  | For Windows WebView2 SDK      |
+| Visual Studio Build Tools | 2019+   | C++ build tools workload (MSVC linker required for Rust) |
+| WebView2 Runtime          | latest  | Pre-installed on Windows 11; on Windows 10 use the [Evergreen Bootstrapper](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) |
+
+#### Installing Visual Studio Build Tools (Windows)
+
+The Rust MSVC toolchain links through `link.exe` from MSVC. Install the
+free build tools and pick the **"Desktop development with C++"** workload:
+
+```powershell
+winget install --id Microsoft.VisualStudio.2022.BuildTools --silent --override "--wait --quiet --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+```
+
+After installation, restart your shell so `link.exe` from MSVC is on PATH
+ahead of any Git Bash `link.exe`. If `cargo build` still picks the wrong
+linker, run cargo from the **Developer PowerShell for VS** shortcut.
 
 ### Local Development
 

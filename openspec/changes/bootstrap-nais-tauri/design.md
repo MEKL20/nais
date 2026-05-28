@@ -9,7 +9,6 @@ NAIS is intended to be a desktop personal AI assistant with customizable Live2D/
 Use a monorepo-style structure:
 
 - `apps/desktop`: Tauri UI/app shell.
-- `crates/nais-bridge`: Rust bridge and local service responsibilities.
 - `packages/avatar-runtime`: frontend avatar rendering contracts.
 - `packages/character-schema`: character pack schema/types/validation.
 - `packages/agent-adapter`: OpenClaw-compatible and future gateway adapters.

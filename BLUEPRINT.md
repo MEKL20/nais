@@ -43,8 +43,6 @@ nais/
 ├── BLUEPRINT.md
 ├── apps/
 │   └── desktop/                 # Tauri app shell and UI
-├── crates/
-│   └── nais-bridge/             # Rust-side local bridge/service layer
 ├── packages/
 │   ├── agent-adapter/           # gateway adapters, OpenClaw first
 │   ├── avatar-runtime/          # Live2D + VRM frontend runtime contracts
