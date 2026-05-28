@@ -21,9 +21,9 @@ voice:
   file: './voice.yaml'
 states:
   idle: { expression: 'exp_01', motion: 'Idle@0' }
-  listening: { expression: 'exp_02', motion: 'Idle@1' }
-  thinking: { expression: 'exp_03', motion: 'Idle@2' }
+  listening: { expression: 'exp_02', motion: 'Idle@0' }
+  thinking: { expression: 'exp_03', motion: 'Idle@0' }
   speaking: { expression: 'exp_04', motion: 'TapBody@0' }
   success: { expression: 'exp_05', motion: 'TapBody@1' }
-  warning: { expression: 'exp_06', motion: 'TapBody@0' }
-  error: { expression: 'exp_07', motion: 'TapBody@1' }
+  warning: { expression: 'exp_06', motion: 'TapBody@2' }
+  error: { expression: 'exp_07', motion: 'TapBody@3' }
