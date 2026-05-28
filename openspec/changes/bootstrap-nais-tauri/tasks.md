@@ -20,3 +20,11 @@
 - [x] Implement `packages/avatar-runtime` contracts (avatar-runtime adapter contract, base adapter, Live2D + VRM placeholders, factory).
 - [x] Implement `packages/agent-adapter` (OpenClaw gateway adapter: HTTP /tools/invoke + WebSocket event subscription).
 - [x] Integrate avatar runtime + agent adapter into Tauri desktop frontend.
+- [x] Add unit test suite for `@nais/character-schema` (vitest, 23 tests covering schema validation + loader).
+- [x] Wire `pnpm run test` into root scripts and CI workflow.
+- [x] Auto-detect Live2D mouth-open parameter (`ParamMouthOpenY` / `ParamMouthOpen` / `ParamMouthA`) with optional `mouthParamId` override.
+- [x] Fix Mao character pack motion mappings to match real `Mao.model3.json` (Idle group has 1 motion, TapBody has 5).
+- [x] Make smoke scripts portable (auto-discover Chrome/Edge on Windows, Linux, and macOS).
+- [x] Document MSVC linker prerequisites for Windows native Tauri build.
+- [x] Verify Rust toolchain via `cargo metadata`.
+- [x] **Verified end-to-end:** `pnpm tauri:build` produces `NAIS_0.1.0_x64_en-US.msi` (14.4 MB) and `NAIS_0.1.0_x64-setup.exe` (13.0 MB) on Windows with VS 2022 Build Tools.

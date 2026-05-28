@@ -41,11 +41,17 @@ jobs:
       - name: Install JavaScript dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm run lint
+
       - name: Build workspace packages
         run: |
           pnpm --filter @nais/character-schema run build
           pnpm --filter @nais/avatar-runtime run build
           pnpm --filter @nais/agent-adapter run build
+
+      - name: Run tests
+        run: pnpm run test
 
       - name: Build frontend
         run: pnpm --filter @nais/desktop run build

@@ -11,6 +11,7 @@
     "dev": "pnpm --filter @nais/desktop run dev",
     "build": "pnpm --filter @nais/desktop run build",
     "typecheck": "pnpm --filter @nais/desktop run typecheck && pnpm --filter @nais/character-schema run typecheck && pnpm --filter @nais/avatar-runtime run typecheck",
+    "test": "pnpm --filter @nais/character-schema run test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
