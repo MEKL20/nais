@@ -1,5 +1,12 @@
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+
+const here = dirname(fileURLToPath(import.meta.url));
+// Repo root: apps/desktop -> ../..
+const repoRoot = resolve(here, "..", "..");
 
 export default defineConfig({
   plugins: [react()],
@@ -7,6 +14,11 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 1420,
     strictPort: true,
+    // Allow dev server to serve files from sibling workspace folders
+    // (e.g. /characters/* assets used by the smoke shim).
+    fs: {
+      allow: [repoRoot],
+    },
   },
   build: {
     chunkSizeWarningLimit: 700,

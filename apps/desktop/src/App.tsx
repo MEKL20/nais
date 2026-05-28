@@ -151,7 +151,7 @@ export function App() {
       }
     });
     return off;
-  }, []);
+  }, [selectedPack]);
 
   const resolveModelSource = useCallback((pack: CharacterPackDetail): AvatarModelSource | null => {
     const preferred = pack.default_mode as AvatarRuntimeKind;

@@ -57,7 +57,9 @@ export function characterAssetUrl(filePath: string): string {
   const tauriInternals = globalThis.window?.__TAURI_INTERNALS__;
   if (tauriInternals) return tauriInternals.convertFileSrc(filePath);
 
-  const normalizedPath = filePath.replaceAll("\\\\", "/");
+  // Browser dev preview fallback — normalize Windows backslashes to forward slashes
+  // so Vite's /@fs/ prefix can serve them.
+  const normalizedPath = filePath.replace(/\\/g, "/");
   return `/@fs${normalizedPath.startsWith("/") ? "" : "/"}${normalizedPath}`;
 }
 

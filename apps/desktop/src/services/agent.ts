@@ -7,6 +7,7 @@ import {
   type AgentMessage,
 } from "@nais/agent-adapter";
 
+
 export type AgentState = "disconnected" | "connecting" | "connected" | "error";
 
 export interface AgentService {

@@ -17,6 +17,7 @@ const SPEECHREC_KEY =
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSpeechRec(): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (globalThis as any)[SPEECHREC_KEY];
 }
 

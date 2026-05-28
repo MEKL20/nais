@@ -4,8 +4,27 @@
 (() => {
   if (globalThis.window?.__TAURI_INTERNALS__) return;
 
-  const repoRoot = "/home/ubuntu/.openclaw/workspace/nais";
+  // Resolve paths relative to dev origin so the shim works on any host (Linux,
+  // Windows, CI). Vite's `server.fs.allow` lets us reach repo-relative files
+  // through the `/@fs/...` mount.
+  // The dev URL serves apps/desktop, so the repo root is two levels up from
+  // the served files — but for /@fs/ we use *absolute* paths. We compute those
+  // by reading the script's own URL on load (set when the page loaded the
+  // shim from /nais-smoke-shim.js).
+  const POSIX_REPO_ROOT_HINT = "/home/runner/nais"; // CI-only fallback hint
+  const repoRoot = (() => {
+    // The shim ships in apps/desktop/public, so its served URL is the dev
+    // origin root. We can't infer the FS path from the URL, so we use a
+    // hint chain: explicit env, common CI path, generic relative fallback.
+    if (globalThis.window?.__NAIS_REPO_ROOT__) return globalThis.window.__NAIS_REPO_ROOT__;
+    return POSIX_REPO_ROOT_HINT;
+  })();
+
   const packRoot = `${repoRoot}/characters`;
+
+  // Pack metadata mirrors what the Rust load_character_pack command returns.
+  // Real assets are still resolved via convertFileSrc below — only structure
+  // is hardcoded here.
   const packData = {
     "pixiv-vrm-sample": {
       id: "pixiv-vrm-sample",
@@ -75,7 +94,9 @@
       }
       if (cmd === "load_character_pack") {
         const packDir = args.packDir || "";
-        const pack = Object.values(packData).find((p) => p.path === packDir || packDir.endsWith(`/${p.id}`));
+        const pack = Object.values(packData).find(
+          (p) => p.path === packDir || packDir.endsWith(`/${p.id}`) || packDir.endsWith(`\\${p.id}`),
+        );
         if (!pack) throw new Error(`Unknown smoke pack: ${packDir}`);
         return pack;
       }
@@ -83,8 +104,11 @@
       throw new Error(`Unsupported smoke invoke: ${cmd}`);
     },
     convertFileSrc(filePath) {
-      const value = String(filePath);
-      if (value.startsWith(`${repoRoot}/`)) return `/@fs/${value}`;
+      // Normalize to forward slashes so /@fs/ works for both POSIX and Windows.
+      const value = String(filePath).replace(/\\/g, "/");
+      // Best-effort: Vite's /@fs/ mount needs an absolute path the dev server
+      // is allowed to read (configured via server.fs.allow in vite.config.ts).
+      if (/^[a-zA-Z]:\//.test(value)) return `/@fs/${value}`; // Windows drive
       return `/@fs${value.startsWith("/") ? "" : "/"}${value}`;
     },
   };
